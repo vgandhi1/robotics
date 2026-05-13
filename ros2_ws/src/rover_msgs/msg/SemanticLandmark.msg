@@ -1,0 +1,9 @@
+std_msgs/Header header
+string class_label
+float32 confidence
+geometry_msgs/Point position
+float32 range
+uint32 observation_count
+builtin_interfaces/Time first_seen
+builtin_interfaces/Time last_seen
+string landmark_id

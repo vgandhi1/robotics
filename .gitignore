@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# Virtual environments
+.venv
+venv
+env
+
+# pytest
+.pytest_cache/
+*.pytest_cache
+.coverage
+htmlcov/
+
+# ROS 2 build artifacts
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# TensorRT engines (large binary files — store externally)
+*.engine
+*.trt
+*.onnx
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker/.env
+
+# Model weights (large binaries — download separately)
+*.pt
+*.pth
+*.weights
+
+# Map files
+*.pgm
+*.yaml.bak
+
+# Serial logs
+*.log

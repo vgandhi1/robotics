@@ -1,0 +1,10 @@
+std_msgs/Header header
+string class_label
+float32 confidence
+uint32 x_min
+uint32 y_min
+uint32 x_max
+uint32 y_max
+uint32 image_width
+uint32 image_height
+int32 track_id

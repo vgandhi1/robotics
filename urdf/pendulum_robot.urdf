@@ -1,0 +1,147 @@
+<?xml version="1.0"?>
+<!--
+  pendulum_robot.urdf — Two-wheeled self-balancing robot URDF
+
+  Robot structure:
+    base_link   — chassis body (rectangular, center of mass above wheel axle)
+    wheel_left  — left drive wheel (continuous joint)
+    wheel_right — right drive wheel (continuous joint)
+
+  Inertia values match the simulation physics model in envs/pendulum_env.py:
+    body_mass = 0.5 kg,  body_height = 0.12 m
+    wheel_mass = 0.05 kg, wheel_radius = 0.02 m
+
+  Compatible with:
+    - MuJoCo (via mjcf conversion or direct urdf import)
+    - ROS / rviz (for visualization)
+    - NVIDIA Isaac Sim / Gym
+-->
+<robot name="pendulum_robot">
+
+  <!-- ─── Materials ───────────────────────────────────────────────────────── -->
+  <material name="blue">
+    <color rgba="0.2 0.4 0.8 1.0"/>
+  </material>
+  <material name="dark_grey">
+    <color rgba="0.2 0.2 0.2 1.0"/>
+  </material>
+  <material name="red">
+    <color rgba="0.8 0.1 0.1 1.0"/>
+  </material>
+
+  <!-- ─── Base link (chassis body) ────────────────────────────────────────── -->
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0.06" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.06 0.10 0.12"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.06" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.06 0.10 0.12"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <!-- Slender rod approximation: I = m*L²/3 about the wheel axle -->
+      <origin xyz="0 0 0.06" rpy="0 0 0"/>
+      <mass value="0.5"/>
+      <inertia
+        ixx="0.000800" ixy="0.0" ixz="0.0"
+        iyy="0.000240" iyz="0.0"
+        izz="0.000800"/>
+    </inertial>
+  </link>
+
+  <!-- ─── Left wheel ───────────────────────────────────────────────────────── -->
+  <link name="wheel_left">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.02" length="0.02"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.02" length="0.02"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <!-- Solid cylinder: Ixx=Iyy=m*(3r²+h²)/12, Izz=m*r²/2 -->
+      <mass value="0.05"/>
+      <inertia
+        ixx="0.0000058" ixy="0.0" ixz="0.0"
+        iyy="0.0000058" iyz="0.0"
+        izz="0.0000100"/>
+    </inertial>
+  </link>
+
+  <joint name="joint_wheel_left" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_left"/>
+    <origin xyz="0.0 0.055 0.0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.001" friction="0.001"/>
+    <limit effort="0.5" velocity="20.0"/>
+  </joint>
+
+  <!-- ─── Right wheel ──────────────────────────────────────────────────────── -->
+  <link name="wheel_right">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.02" length="0.02"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.02" length="0.02"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia
+        ixx="0.0000058" ixy="0.0" ixz="0.0"
+        iyy="0.0000058" iyz="0.0"
+        izz="0.0000100"/>
+    </inertial>
+  </link>
+
+  <joint name="joint_wheel_right" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_right"/>
+    <origin xyz="0.0 -0.055 0.0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.001" friction="0.001"/>
+    <limit effort="0.5" velocity="20.0"/>
+  </joint>
+
+  <!-- ─── IMU sensor frame ─────────────────────────────────────────────────── -->
+  <link name="imu_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.003"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+    <inertial>
+      <mass value="0.003"/>
+      <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1e-7" iyz="0" izz="1e-7"/>
+    </inertial>
+  </link>
+
+  <joint name="joint_imu" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <!-- Mounted at the center of the chassis -->
+    <origin xyz="0 0 0.09" rpy="0 0 0"/>
+  </joint>
+
+</robot>

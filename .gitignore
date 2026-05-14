@@ -1,0 +1,28 @@
+# Data (too large for git)
+data/raw_episodes/
+data/webdataset_shards/
+
+# Training artifacts
+runs/
+*.pt
+*.pth
+*.ckpt
+
+# W&B
+wandb/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+*.egg
+
+# Profiler traces (PNG placeholders tracked; actual large traces excluded)
+runs/
+
+# OS
+.DS_Store

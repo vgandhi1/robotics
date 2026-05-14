@@ -1,0 +1,20 @@
+[project]
+name = "vla-bench"
+version = "1.0.0"
+description = "VLA model training optimization benchmark: WebDataset + FlashAttention-2 + FSDP"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+
+[project.urls]
+Homepage = "https://github.com/vgandhi1/vla-bench"
+"W&B Report" = "https://wandb.ai/vgandhi1/vla-bench"
+"Bug Tracker" = "https://github.com/vgandhi1/vla-bench/issues"
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true

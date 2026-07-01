@@ -1,0 +1,77 @@
+version: "3.9"
+
+# Semantic SLAM Rover — docker-compose
+#
+# Usage:
+#   # Full hardware bringup on Jetson:
+#   docker-compose up rover
+#
+#   # Development mode (no hardware, bag replay):
+#   docker-compose up rover-dev
+#
+#   # Run tests:
+#   docker-compose up test
+
+services:
+  # ── Full rover stack (Jetson, hardware attached) ─────────────────────────────
+  rover:
+    image: semantic-slam-rover:latest
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.jetson
+    runtime: nvidia
+    network_mode: host
+    privileged: true
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - ROS_DOMAIN_ID=42
+    volumes:
+      - /dev:/dev                            # Hardware device access
+      - rover_models:/opt/rover/models       # TensorRT engine files
+      - rover_maps:/tmp                      # SLAM map persistence
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0            # RPLiDAR
+      - /dev/ttyUSB1:/dev/ttyUSB1            # ESP32
+      - /dev/video0:/dev/video0              # Camera
+    command: >
+      ros2 launch rover_bringup rover_full_bringup.launch.py
+      use_hardware:=true use_rviz:=false
+    restart: unless-stopped
+
+  # ── Development / simulation mode (x86, no hardware) ────────────────────────
+  rover-dev:
+    image: semantic-slam-rover:latest
+    network_mode: host
+    environment:
+      - ROS_DOMAIN_ID=42
+    volumes:
+      - rover_models:/opt/rover/models
+    command: >
+      ros2 launch rover_bringup rover_full_bringup.launch.py
+      use_hardware:=false use_camera:=false use_sim_time:=true
+    profiles: ["dev"]
+
+  # ── Unit + integration tests ──────────────────────────────────────────────────
+  test:
+    image: semantic-slam-rover:latest
+    network_mode: host
+    environment:
+      - ROS_DOMAIN_ID=43
+    volumes:
+      - ..:/workspace:ro
+    working_dir: /workspace
+    command: >
+      bash -c "
+        source /opt/ros/humble/setup.bash &&
+        cd ros2_ws &&
+        colcon test --packages-select rover_fusion rover_perception &&
+        colcon test-result --verbose
+      "
+    profiles: ["test"]
+
+volumes:
+  rover_models:
+    driver: local
+  rover_maps:
+    driver: local

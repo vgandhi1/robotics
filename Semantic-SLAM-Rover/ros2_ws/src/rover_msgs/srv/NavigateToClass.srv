@@ -1,0 +1,8 @@
+string class_label
+float32 approach_distance
+bool explore_if_not_found
+---
+bool accepted
+string message
+string landmark_id
+geometry_msgs/Point target_position

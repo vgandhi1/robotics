@@ -1,0 +1,5 @@
+string class_label
+float32 max_age_seconds
+---
+rover_msgs/SemanticLandmark[] landmarks
+bool found

@@ -1,0 +1,55 @@
+# ── rover_bringup/config/rover_params.yaml ──────────────────────────────────
+# Shared parameters loaded by the full bringup launch.
+# Override per-field with ros2 param set or by passing a different YAML on launch.
+
+# Hardware ─────────────────────────────────────────────────────────────────────
+esp32_bridge_node:
+  ros__parameters:
+    port: /dev/ttyUSB1
+    baudrate: 115200
+    wheel_base_m: 0.22
+    wheel_radius_m: 0.033
+    encoder_ticks_rev: 1120
+    reconnect_delay_s: 5.0
+    odom_frame: odom
+    base_frame: base_link
+    cmd_timeout_s: 0.5
+
+# Perception ───────────────────────────────────────────────────────────────────
+yolo_node:
+  ros__parameters:
+    engine_path: /opt/rover/models/yolov8n.engine
+    use_tensorrt: true
+    conf_threshold: 0.45
+    nms_threshold: 0.50
+    input_width: 640
+    input_height: 640
+    camera_topic: /camera/image_raw
+    publish_debug_image: true
+
+# Fusion ───────────────────────────────────────────────────────────────────────
+fusion_node:
+  ros__parameters:
+    merge_radius_m: 0.5
+    max_landmark_age_s: 30.0
+    min_confidence: 0.40
+    min_range_m: 0.30
+    map_frame: map
+    robot_frame: base_link
+    tf_timeout_s: 0.10
+    # Camera extrinsics (camera → robot frame)
+    camera_yaw_offset_deg: 0.0
+    camera_pitch_offset_deg: -5.0
+    camera_tx: 0.05
+    camera_ty: 0.0
+    camera_tz: 0.12
+    publish_rate_hz: 1.0
+    prune_rate_hz: 0.2
+
+# Navigation ───────────────────────────────────────────────────────────────────
+semantic_navigator:
+  ros__parameters:
+    explore_timeout_s: 300.0
+    nav_timeout_s: 60.0
+    goal_tolerance_m: 0.25
+    map_frame: map

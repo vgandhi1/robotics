@@ -1,0 +1,102 @@
+# PPO Hyperparameters and Environment Configuration
+# Reference: https://stable-baselines3.readthedocs.io/en/master/modules/ppo.html
+
+# ─── Environment ────────────────────────────────────────────────────────────────
+env:
+  id: "PendulumBalance-v0"
+  max_episode_steps: 1000          # 10 seconds at 100 Hz
+  control_freq_hz: 100             # Target control frequency
+  obs_dim: 4                       # [pitch_angle, pitch_rate, lw_speed, rw_speed]
+  action_dim: 1                    # [target_motor_voltage]
+
+  # Physical limits for observation normalization
+  pitch_limit_rad: 0.5             # ~28.6 degrees — episode termination threshold
+  x_position_limit_m: 2.0
+  wheel_speed_limit_rads: 20.0
+  pitch_rate_limit_rads: 10.0
+
+  # Termination thresholds
+  fall_angle_rad: 0.5
+  drift_limit_m: 2.0
+
+# ─── Reward Shaping ─────────────────────────────────────────────────────────────
+reward:
+  alpha: 1.0                       # Upright angle reward coefficient
+  beta: 0.01                       # Motor effort penalty coefficient
+  gamma: 0.1                       # Position drift penalty coefficient
+  delta: 0.1                       # Alive bonus per step
+
+# ─── Domain Randomization ────────────────────────────────────────────────────────
+domain_randomization:
+  enabled: true
+  mass_kg:
+    nominal: 0.5
+    low: 0.4
+    high: 0.6
+  friction_nm:
+    low: 0.0005
+    high: 0.0015
+  imu_noise_std_rad:
+    low: 0.001
+    high: 0.020
+  imu_latency_ms:
+    low: 5.0
+    high: 15.0
+  wheel_slip_coeff:
+    low: 0.0
+    high: 0.05
+  action_delay_steps:
+    low: 0
+    high: 2
+
+# ─── PPO Algorithm ───────────────────────────────────────────────────────────────
+ppo:
+  # Training duration
+  total_timesteps: 5_000_000       # Phase 2: baseline
+  total_timesteps_dr: 10_000_000   # Phase 3: with domain randomization
+
+  # PPO core parameters
+  n_steps: 2048                    # Steps per rollout buffer per env
+  batch_size: 64                   # Minibatch size for gradient updates
+  n_epochs: 10                     # Number of passes over the rollout buffer
+  learning_rate: 3.0e-4
+  gamma: 0.99                      # Discount factor
+  gae_lambda: 0.95                 # GAE lambda for advantage estimation
+  clip_range: 0.2                  # PPO clip parameter
+  clip_range_vf: null              # Value function clip (null = disabled)
+  ent_coef: 0.01                   # Entropy coefficient (exploration)
+  vf_coef: 0.5                     # Value function loss coefficient
+  max_grad_norm: 0.5               # Gradient clipping
+  normalize_advantage: true
+
+  # Parallel environments
+  n_envs: 8
+
+  # Policy network architecture (MLP)
+  policy: "MlpPolicy"
+  policy_kwargs:
+    net_arch:
+      pi: [64, 64]                 # Actor (policy) hidden layers
+      vf: [64, 64]                 # Critic (value) hidden layers
+    activation_fn: "tanh"          # Keeps outputs bounded, good for control
+    ortho_init: true               # Orthogonal weight initialization
+
+# ─── Training Infrastructure ────────────────────────────────────────────────────
+training:
+  log_dir: "logs/"
+  model_save_path: "logs/best_model"
+  tensorboard_log: "logs/tensorboard"
+  eval_freq: 10000                 # Evaluate every N timesteps
+  n_eval_episodes: 20
+  save_freq: 50000
+  verbose: 1
+  seed: 42
+
+# ─── Export ──────────────────────────────────────────────────────────────────────
+export:
+  onnx_path: "export/model.onnx"
+  onnx_int8_path: "export/model_int8.onnx"
+  tflite_path: "export/model.tflite"
+  opset_version: 12
+  input_name: "state"
+  output_name: "action"

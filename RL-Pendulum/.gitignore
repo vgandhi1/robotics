@@ -1,0 +1,40 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Training artifacts
+logs/
+*.zip
+*.pt
+*.pth
+
+# Export artifacts
+export/*.onnx
+export/*.tflite
+export/*_data.h
+firmware/inference_loop/rl_policy_data.h
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test cache
+.pytest_cache/
+.coverage
+htmlcov/

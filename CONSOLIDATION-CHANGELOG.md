@@ -28,6 +28,10 @@
 
 All three standalone repos archived (2026-06-30) with README redirect banners → this meta's subfolder.
 
-## Pending (portfolio polish, not blocking)
+## Pages (DONE 2026-06-30)
 
-- [ ] Pages workflow — subs have no `presentation.html`; add per-sub `index.html` landing then combined `_site/<sub>/` publish.
+Combined `_site/<sub>/` published via `peaceiris/actions-gh-pages` → `gh-pages`; Pages source = gh-pages branch. All decks return 200:
+  - https://vgandhi1.github.io/robotics/RL-Pendulum/
+  - https://vgandhi1.github.io/robotics/Semantic-SLAM-Rover/
+  - https://vgandhi1.github.io/robotics/VLA-bench/
+  - landing: https://vgandhi1.github.io/robotics/

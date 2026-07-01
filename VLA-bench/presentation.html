@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>VLA-bench — Profiling Sim-to-Real VLA Fine-Tuning</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#07060f;--card:#0f0e18;--card2:#16142a;--accent:#38bdf8;--accent2:#a855f7;--text:#faf5ff;--muted:#a8a29e;--border:rgba(56,189,248,.25);--mono:'JetBrains Mono','Fira Code',Consolas,monospace}
+html{scroll-behavior:smooth}
+body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:52px;background:rgba(7,6,15,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700}
+.nav-links{display:flex;gap:4px;flex-wrap:wrap}
+.nav-links a{font-size:10px;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:6px}
+.nav-links a:hover{color:var(--text);background:rgba(56,189,248,.15)}
+.slide{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:88px 72px 72px;border-bottom:1px solid rgba(56,189,248,.08);position:relative}
+.slide-num{position:absolute;top:68px;right:48px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.section-label{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.slide-title{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;margin-bottom:8px;line-height:1.2}
+.slide-title span{color:var(--accent)}
+.slide-desc{color:var(--muted);font-size:.9rem;margin-bottom:32px;max-width:760px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px}
+.card h3{font-size:.92rem;font-weight:600;margin-bottom:8px}.card p{font-size:.82rem;color:var(--muted);line-height:1.55}
+.bt-p{border-top:3px solid var(--accent)}.bt-g{border-top:3px solid var(--accent2)}
+.pill-row{display:flex;flex-wrap:wrap;gap:8px}.pill{font-family:var(--mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--muted)}
+.hero{background:radial-gradient(ellipse 70% 55% at 50% 35%,rgba(56,189,248,.12) 0%,transparent 70%);align-items:center;text-align:center}
+.hero-badge{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);border:1px solid var(--border);border-radius:20px;padding:5px 18px;margin-bottom:22px}
+.hero-h1{font-size:clamp(1.7rem,4vw,2.8rem);font-weight:900;line-height:1.1;background:linear-gradient(135deg,#fff,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px;max-width:860px}
+.hero-sub{font-size:1rem;color:var(--muted);max-width:660px;margin-bottom:32px}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{background:var(--card2);color:var(--muted);padding:10px 12px;text-align:left;font-family:var(--mono);font-size:.7rem}
+td{padding:10px 12px;border-bottom:1px solid rgba(56,189,248,.08)}
+td b{color:var(--accent)}
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.metric-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.metric-val{font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--accent)}.metric-lbl{font-size:.7rem;color:var(--muted);margin-top:4px}
+.final{align-items:center;text-align:center}
+.final-link{display:inline-block;margin:8px;padding:10px 24px;border-radius:8px;background:var(--accent);color:#04121a;font-weight:700;text-decoration:none;font-size:.85rem}
+.final-link.alt{background:transparent;border:1px solid var(--accent);color:var(--accent)}
+@media(max-width:900px){.slide{padding:72px 24px 56px}.g2,.g3,.metric-grid{grid-template-columns:1fr}.nav-links{display:none}}
+</style>
+</head>
+<body>
+<nav><div class="nav-logo">VLA-BENCH // robotics</div><div class="nav-links"><a href="#hero">Intro</a><a href="#results">Results</a><a href="#layers">Layers</a><a href="#cost">Cost</a><a href="#stack">Stack</a><a href="#links">Links</a></div></nav>
+
+<section class="slide hero" id="hero">
+  <div class="hero-badge">Robotics Pillar · Training Systems</div>
+  <h1 class="hero-h1">VLA-bench</h1>
+  <p class="hero-sub">Systematic profiling and optimization of the <b>real-hardware fine-tuning stage</b> in a sim-to-real Vision-Language-Action pipeline — three optimization layers, measured gains at each step.</p>
+  <div class="pill-row" style="justify-content:center"><span class="pill">PyTorch 2.2</span><span class="pill">WebDataset</span><span class="pill">FlashAttention-2</span><span class="pill">FSDP</span></div>
+</section>
+
+<section class="slide" id="results">
+  <div class="slide-num">01</div><div class="section-label">Results Summary</div>
+  <h2 class="slide-title">Naive baseline → <span>Phase 3 optimized</span> (2 GPU)</h2>
+  <table>
+    <tr><th>Metric</th><th>Naive</th><th>Optimized</th><th>Gain</th></tr>
+    <tr><td>Images/sec</td><td>~14</td><td>~40+</td><td><b>3.3×</b></td></tr>
+    <tr><td>Peak VRAM total</td><td>~38 GB</td><td>~28 GB</td><td><b>-26%</b></td></tr>
+    <tr><td>GPU utilization</td><td>~40%</td><td>~87%</td><td><b>+47pp</b></td></tr>
+    <tr><td>Multi-GPU scaling</td><td>~65%</td><td>~88%</td><td><b>+23pp</b></td></tr>
+    <tr><td>Cost / run (500K frames)</td><td>~$24.75</td><td>~$8.75</td><td><b>-65%</b></td></tr>
+  </table>
+</section>
+
+<section class="slide" id="layers">
+  <div class="slide-num">02</div><div class="section-label">What Each Layer Buys</div>
+  <h2 class="slide-title">Optimizations applied <span>in sequence</span></h2>
+  <div class="g2" style="margin-top:12px">
+    <div class="card bt-p"><h3>Phase 2 · WebDataset streaming</h3><p>Removes CPU decode bottleneck — GPU utilization 40% → 87%.</p></div>
+    <div class="card bt-p"><h3>Phase 3a · FlashAttention-2</h3><p>Fused attention, no N² materialization — peak VRAM -26%.</p></div>
+    <div class="card bt-p"><h3>Phase 3b · FSDP full shard</h3><p>Enables 2× batch size; 88% multi-GPU scaling efficiency.</p></div>
+    <div class="card bt-p"><h3>Phase 3c · Activation checkpointing</h3><p>Extra -15% VRAM, trades ~20% compute overhead.</p></div>
+  </div>
+</section>
+
+<section class="slide" id="cost">
+  <div class="slide-num">03</div><div class="section-label">Why It Matters</div>
+  <h2 class="slide-title">Compresses the <span>failure → patch → redeploy</span> loop</h2>
+  <p class="slide-desc">On 2×RTX 3090 (RunPod $2.50/hr), a 500K-frame run drops from ~9.9&nbsp;hrs ($24.75) to ~3.5&nbsp;hrs ($8.75). In a sim-to-real pipeline this cuts the real-floor iteration cycle from ~2 days to ~6 hours — same-day iteration on new failure modes.</p>
+  <div class="metric-grid" style="margin-top:12px">
+    <div class="metric-box"><div class="metric-val">6.4hr</div><div class="metric-lbl">saved per run</div></div>
+    <div class="metric-box"><div class="metric-val">$16</div><div class="metric-lbl">saved per run</div></div>
+    <div class="metric-box"><div class="metric-val">2 days→6hr</div><div class="metric-lbl">iteration cycle</div></div>
+    <div class="metric-box"><div class="metric-val">W&amp;B</div><div class="metric-lbl">full report linked</div></div>
+  </div>
+</section>
+
+<section class="slide" id="stack">
+  <div class="slide-num">04</div><div class="section-label">Stack</div>
+  <h2 class="slide-title">Multi-GPU <span>training profiler</span></h2>
+  <div class="pill-row" style="margin-top:12px"><span class="pill">PyTorch 2.2</span><span class="pill">FSDP</span><span class="pill">FlashAttention-2</span><span class="pill">WebDataset</span><span class="pill">Weights &amp; Biases</span><span class="pill">torch.profiler</span><span class="pill">RunPod 2×RTX 3090</span></div>
+</section>
+
+<section class="slide final" id="links">
+  <div class="section-label">Robotics Pillar</div>
+  <h2 class="slide-title">Part of <span>vgandhi1/robotics</span></h2>
+  <p class="slide-desc" style="text-align:center">Train → deploy → perceive. VLA-bench is the training-systems leg.</p>
+  <div><a class="final-link" href="https://github.com/vgandhi1/robotics/tree/main/VLA-bench">Source →</a><a class="final-link alt" href="https://wandb.ai/vgandhi1/vla-bench">W&amp;B report →</a></div>
+</section>
+</body>
+</html>
